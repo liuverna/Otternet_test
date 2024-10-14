@@ -4,11 +4,8 @@ select
 
 	/******** ACTION FIELDS ********/
 	,'Test_Oct14' as process_name
-	,true as query_log
-	,true as run_actions
-	,false as create_tickets
-	,true as log_results
-	,true as savelog
+	,false as create_ticket
+
 
 from `gc-prd-risk-prod-gdia.dbt_risk.d_fds_exposure`
 LIMIT 2
