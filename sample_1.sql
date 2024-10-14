@@ -3,7 +3,7 @@ select
 	,amount_gbp as fds_exposure_current
 
 	/******** ACTION FIELDS ********/
-	,'Test_Oct14' as process_name
+	-- ,'Test_Oct14' as process_name
 	,false as create_ticket
 
 
