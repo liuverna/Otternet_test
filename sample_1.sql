@@ -11,5 +11,5 @@ select
 	,true as savelog
 
 from `gc-prd-risk-prod-gdia.dbt_risk.d_fds_exposure`
-LIMIT 1
+LIMIT 2
 
