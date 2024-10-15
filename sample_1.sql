@@ -18,4 +18,4 @@ select
 
 
 from `gc-prd-risk-prod-gdia.dbt_risk.d_fds_exposure`
-LIMIT 2
+LIMIT 1
