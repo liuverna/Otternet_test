@@ -1,7 +1,7 @@
 select 
 	creditor_id
 	,amount_gbp as fds_exposure_current
- ,3402503 as ticket_id
+ ,3402624 as ticket_id
 
 	/******** ACTION FIELDS ********/
 	,'Test_Oct15' as process_name
