@@ -10,7 +10,7 @@ select
         12443238293916 AS ticket_form_id,
         ARRAY<STRUCT<
             id INT64, 
-            value INT64
+            value STRING
         >>[
             -- Custom field entries
             STRUCT(15542500163356, 55555),  -- First custom field (category)
