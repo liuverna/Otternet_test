@@ -108,6 +108,24 @@ select *
             STRUCT(
                 'Creditor ID: ' || creditor_id 
 								||'\n' || 'Organisation ID: ' || organisation_id
+								||'\n' || 'Merchant name: ' || merchant_name
+								||'\n' || 'Geo: ' || geo
+								||'\n' || 'MCC: ' || merchant_category_code_description
+								||'\n' || 'Payment provider: ' || is_payment_provider
+								||'\n' || 'Insolvency flag: ' || insolvency_flag
+								||'\n' || 'Risk Label Date: ' || most_recent_risk_label_created_at
+								||'\n' || 'Parent ID: ' || parent_account_id
+								||'\n' || 'Parent Name: ' || parent_account_name
+								||'\n' || 'Account Type: ' || account_type
+								
+								||'\n' || 'Payments last 12m: ' || round(merchant_payment_amt_gbp_last_365d,2)
+								||'\n' || 'FDS Exposure: ' || round(fds_exposure_current,2)
+								-- ||'\n' || ': ' || xxxx
+								-- ||'\n' || ': ' || xxxx
+								-- ||'\n' || ': ' || xxxx
+								-- ||'\n' || ': ' || xxxx
+
+
 								 AS body,
                 false AS public
             ) AS comment,
