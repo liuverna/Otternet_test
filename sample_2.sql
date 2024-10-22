@@ -13,8 +13,8 @@ select
             value STRING
         >>[
             -- Custom field entries
-            STRUCT(15542500163356, 55555),  -- First custom field (category)
-            STRUCT(15545615128732, 123)     -- Second custom field (fraud score)
+            STRUCT(15542500163356, '55555'),  -- First custom field (category)
+            STRUCT(15545615128732, '123')     -- Second custom field (fraud score)
         ] AS custom_fields,
 
         -- Comment object
@@ -24,6 +24,7 @@ select
         ) AS comment
     ) AS ticket
 )) AS ActionField_ZendeskUpdateTicket
+
 	
 
 from `gc-prd-risk-prod-gdia.dbt_risk.d_fds_exposure`
