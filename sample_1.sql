@@ -107,7 +107,7 @@ select *
             -- Comment object
             STRUCT(
                 'Creditor ID: ' || creditor_id 
-								|| 'Organisation ID: ' || organisation_id
+								||'\n' || 'Organisation ID: ' || organisation_id
 								 AS body,
                 false AS public
             ) AS comment,
