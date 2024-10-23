@@ -162,34 +162,35 @@ select *
             
             -- Comment object
             STRUCT(
-                'Creditor ID: ' || creditor_id
-                || '\nOrganisation ID: ' || organisation_id
-                || '\nMerchant name: ' || merchant_name
-                || '\nGeo: ' || geo
-                || '\nMCC: ' || merchant_category_code_description
-                || '\nPayment provider: ' || is_payment_provider
-                || '\nCS Managed?: ' || is_cs_managed
-                || '\nCurrent Risk Label: ' || merchant_risk_label_description
-                || '\nParent ID: ' || parent_account_id
-                || '\nParent Name: ' || parent_account_name
-                || '\nAccount Type: ' || account_type
-                || '\nPayments last 12m: ' || ROUND(merchant_payment_amt_gbp_last_365d, 2)
-                || '\nFDS Exposure: ' || ROUND(fds_exposure_current, 2)
-                || '\nNegative Balance: ' || nb_balance_current
+                'Creditor ID: ' || COALESCE(creditor_id, '') 
+                || '\nOrganisation ID: ' || COALESCE(organisation_id, '')
+                || '\nMerchant name: ' || COALESCE(merchant_name, '')
+                || '\nGeo: ' || COALESCE(geo, '')
+                || '\nMCC: ' || COALESCE(merchant_category_code_description, '')
+                || '\nPayment provider: ' || COALESCE(is_payment_provider, false)
+                || '\nCS Managed?: ' || COALESCE(is_cs_managed, '')
+                || '\nCurrent Risk Label: ' || COALESCE(merchant_risk_label_description, '')
+                || '\nParent ID: ' || COALESCE(parent_account_id, '')
+                || '\nParent Name: ' || COALESCE(parent_account_name, '')
+                || '\nAccount Type: ' || COALESCE(account_type, '')
+                || '\nPayments last 12m: ' || COALESCE(CAST(ROUND(merchant_payment_amt_gbp_last_365d, 2) AS STRING), '')
+                || '\nFDS Exposure: ' || COALESCE(CAST(ROUND(fds_exposure_current, 2) AS STRING), '')
+                || '\nNegative Balance: ' || COALESCE(nb_balance_current, 0)
                 || '\n\n'
-                || '\nCurrent D&B Score: ' || db_failure_score_current
-                || '\nPrevious D&B Score: ' || db_failure_score_last
-                || '\nScore Change: ' || db_failure_score_change
+                || '\nCurrent D&B Score: ' || COALESCE(db_failure_score_current, null)
+                || '\nPrevious D&B Score: ' || COALESCE(db_failure_score_last, null)
+                || '\nScore Change: ' || COALESCE(db_failure_score_change, null)
                 || '\n\n\nCreated by OtterNet'
                 AS body,
                 false AS public
             ) AS comment,
 
             -- Subject
-            'Credit Monitoring - D&B Score - ' || merchant_name || ' - ' || creditor_id AS subject
+            'Credit Monitoring - D&B Score - ' || COALESCE(merchant_name, '') || ' - ' || COALESCE(creditor_id, '') AS subject
         ) AS ticket
     )
 ) AS ActionField_ZendeskCreateTicket
+
 
 
 from payload
