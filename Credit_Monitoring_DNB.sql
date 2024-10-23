@@ -140,62 +140,56 @@ from data_merge
 select * 
       ,'Credit_Monitoring_DNB' as process_name
 
-			,TO_JSON_STRING(
-        STRUCT(
+,TO_JSON_STRING(
+    STRUCT(
         STRUCT(
             "normal" AS priority, 
-            3285009 as brand_id, 
-            360005611314 as group_id, 
-            9724439852828 as requester_id, 
+            3285009 AS brand_id, 
+            360005611314 AS group_id, 
+            9724439852828 AS requester_id, 
             5636997079964 AS ticket_form_id,
-						4451452073116 as assignee_id,
-
+            4451452073116 AS assignee_id,
+            
             ARRAY<STRUCT<
                 id INT64, 
                 value STRING
             >>[
-                -- Custom field entries
-                STRUCT(28480929, 'credit__monitoring_fs')  -- Category
-                -- STRUCT(15542500163356, '12345')  -- Exposure
-                -- STRUCT(15545615128732, '123')  -- Fraud score (uncomment if needed)
-
+                STRUCT(28480929, 'credit__monitoring_fs')  -- Custom field entries
+                -- Additional custom fields can be uncommented if needed
+                -- STRUCT(15542500163356, '12345'),  -- Exposure
+                -- STRUCT(15545615128732, '123')  -- Fraud score
             ] AS custom_fields,
-
+            
             -- Comment object
             STRUCT(
-                'Creditor ID: ' || creditor_id 
-								||'\n' || 'Organisation ID: ' || organisation_id
-								||'\n' || 'Merchant name: ' || merchant_name
-								||'\n' || 'Geo: ' || geo
-								||'\n' || 'MCC: ' || merchant_category_code_description
-								||'\n' || 'Payment provider: ' || is_payment_provider
-								||'\n' || 'CS Managed?: ' || is_cs_managed
-								||'\n' || 'Current Risk Label: ' || merchant_risk_label_description
-								||'\n' || 'Parent ID: ' || parent_account_id
-								||'\n' || 'Parent Name: ' || parent_account_name
-								||'\n' || 'Account Type: ' || account_type
-								||'\n' || 'Payments last 12m: ' || round(merchant_payment_amt_gbp_last_365d,2)
-								||'\n' || 'FDS Exposure: ' || round(fds_exposure_current,2)
-								||'\n' || 'Negative Balance: ' || nb_balance_current
-								||'\n' || '\n'
-
-								||'\n' || 'Current D&B Score: ' || db_failure_score_current
-								||'\n' || 'Previous D&B Score: ' || db_failure_score_last
-								||'\n' || 'Score Change: ' || db_failure_score_change
-
-
-								||'\n' || '\n' || '\n' || 'Created by OtterNet'
-								 AS body,
+                'Creditor ID: ' || creditor_id
+                || '\nOrganisation ID: ' || organisation_id
+                || '\nMerchant name: ' || merchant_name
+                || '\nGeo: ' || geo
+                || '\nMCC: ' || merchant_category_code_description
+                || '\nPayment provider: ' || is_payment_provider
+                || '\nCS Managed?: ' || is_cs_managed
+                || '\nCurrent Risk Label: ' || merchant_risk_label_description
+                || '\nParent ID: ' || parent_account_id
+                || '\nParent Name: ' || parent_account_name
+                || '\nAccount Type: ' || account_type
+                || '\nPayments last 12m: ' || ROUND(merchant_payment_amt_gbp_last_365d, 2)
+                || '\nFDS Exposure: ' || ROUND(fds_exposure_current, 2)
+                || '\nNegative Balance: ' || nb_balance_current
+                || '\n\n'
+                || '\nCurrent D&B Score: ' || db_failure_score_current
+                || '\nPrevious D&B Score: ' || db_failure_score_last
+                || '\nScore Change: ' || db_failure_score_change
+                || '\n\n\nCreated by OtterNet'
+                AS body,
                 false AS public
             ) AS comment,
 
-        --     -- Subject
+            -- Subject
             'Credit Monitoring - D&B Score - ' || merchant_name || ' - ' || creditor_id AS subject
-
-
         ) AS ticket
-				)
-        ) AS ActionField_ZendeskCreateTicket
+    )
+) AS ActionField_ZendeskCreateTicket
 
 
 from payload
