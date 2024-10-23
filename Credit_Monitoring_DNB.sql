@@ -198,4 +198,4 @@ where merchant_monitoring_qualifyer = 1
 			and failure_score_monitoring_alert = "New Alert"
 			and insolvency_flag = false
 			and date(db_failure_score_current_date) = CURRENT_DATE()-1
-			LIMIT 1
+			-- LIMIT 1
