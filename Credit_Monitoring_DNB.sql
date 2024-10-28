@@ -119,11 +119,13 @@ left join creditor_payments                    as e on a.creditor_id=e.creditor_
 select * 
 ,case when (fds_exposure_current >= 250000 and db_failure_score_current < 40) or (nb_balance_current <= -20000) or (fds_exposure_current >= 500000) then 1 else 0 end as merchant_monitoring_qualifyer
 ,case when 
-		((db_failure_score_current >= 86) and (db_failure_score_change <= -20))
+		((db_failure_score_current >= 86) and (db_failure_score_change <= -30))
 		or 
-		((db_failure_score_current >= 51 and db_failure_score_current <= 85) and (db_failure_score_change <= -10))
+		((db_failure_score_current >= 51 and db_failure_score_current <= 85) and (db_failure_score_change <= -20))
 		or
-		((db_failure_score_current >= 11 and db_failure_score_current <= 50) and (db_failure_score_change <= -5))
+		((db_failure_score_current >= 30 and db_failure_score_current <= 50) and (db_failure_score_change <= -10))
+    or
+		((db_failure_score_current >= 11 and db_failure_score_current <= 29) and (db_failure_score_change <= -5))
 		or 
 		((db_failure_score_current >= 1 and db_failure_score_current <= 10) and (db_failure_score_change <= -2))
 		then "New Alert"
@@ -141,55 +143,64 @@ select *
       ,'Credit_Monitoring_DNB' as process_name
 
 ,TO_JSON_STRING(
-    STRUCT(
-        STRUCT(
-            "normal" AS priority, 
-            3285009 AS brand_id, 
-            360005611314 AS group_id, 
-            9724439852828 AS requester_id, 
-            5636997079964 AS ticket_form_id,
-            4451452073116 AS assignee_id,
-            
-            ARRAY<STRUCT<
-                id INT64, 
-                value STRING
-            >>[
-                STRUCT(28480929, 'credit__monitoring_fs')  -- Custom field entries
-                -- Additional custom fields can be uncommented if needed
-                -- STRUCT(15542500163356, '12345'),  -- Exposure
-                -- STRUCT(15545615128732, '123')  -- Fraud score
-            ] AS custom_fields,
-            
-            -- Comment object
-            STRUCT(
-                'Creditor ID: ' || COALESCE(creditor_id, '') 
-                || '\nOrganisation ID: ' || COALESCE(organisation_id, '')
-                || '\nMerchant name: ' || COALESCE(merchant_name, '')
-                || '\nGeo: ' || COALESCE(geo, '')
-                || '\nMCC: ' || COALESCE(merchant_category_code_description, '')
-                || '\nPayment provider: ' || COALESCE(is_payment_provider, false)
-                || '\nCS Managed?: ' || COALESCE(is_cs_managed, '')
-                || '\nCurrent Risk Label: ' || COALESCE(merchant_risk_label_description, '')
-                || '\nParent ID: ' || COALESCE(parent_account_id, '')
-                || '\nParent Name: ' || COALESCE(parent_account_name, '')
-                || '\nAccount Type: ' || COALESCE(account_type, '')
-                || '\nPayments last 12m: ' || COALESCE(CAST(ROUND(merchant_payment_amt_gbp_last_365d, 2) AS STRING), '')
-                || '\nFDS Exposure: ' || COALESCE(CAST(ROUND(fds_exposure_current, 2) AS STRING), '')
-                || '\nNegative Balance: ' || COALESCE(nb_balance_current, 0)
-                || '\n\n'
-                || '\nCurrent D&B Score: ' || COALESCE(db_failure_score_current, null)
-                || '\nPrevious D&B Score: ' || COALESCE(db_failure_score_last, null)
-                || '\nScore Change: ' || COALESCE(db_failure_score_change, null)
-                || '\n\n\nCreated by OtterNet'
-                AS body,
-                false AS public
-            ) AS comment,
+		    STRUCT(
+		        STRUCT(
+		            "normal" AS priority, 
+		            3285009 AS brand_id, 
+		            360005611314 AS group_id, 
+		            9724439852828 AS requester_id, 
+		            5636997079964 AS ticket_form_id,
+		            4451452073116 AS assignee_id,
+		            
+		            ARRAY<STRUCT<
+		                id INT64, 
+		                value STRING
+		            >>[
+		                STRUCT(28480929, 'credit__monitoring_fs')  -- Custom field entries
+		                -- Additional custom fields can be uncommented if needed
+		                -- STRUCT(15542500163356, '12345'),  -- Exposure
+		                -- STRUCT(15545615128732, '123')  -- Fraud score
+		            ] AS custom_fields,
+		            
+		            -- Comment object
+		            STRUCT(
+		                'Creditor ID: ' || COALESCE(creditor_id, '') 
+		                || '\nOrganisation ID: ' || COALESCE(organisation_id, '')
+		                || '\nMerchant name: ' || COALESCE(merchant_name, '')
+		                || '\nGeo: ' || COALESCE(geo, '')
+		                || '\nMCC: ' || COALESCE(merchant_category_code_description, '')
+		                || '\nPayment provider: ' || COALESCE(is_payment_provider, false)
+		                || '\nCS Managed?: ' || COALESCE(is_cs_managed, '')
+		                || '\nCurrent Risk Label: ' || COALESCE(merchant_risk_label_description, '')
+		                || '\nParent ID: ' || COALESCE(parent_account_id, '')
+		                || '\nParent Name: ' || COALESCE(parent_account_name, '')
+		                || '\nAccount Type: ' || COALESCE(account_type, '')
+		                || '\nPayments last 12m: ' || COALESCE(CAST(ROUND(merchant_payment_amt_gbp_last_365d, 2) AS STRING), '')
+		                || '\nFDS Exposure: ' || COALESCE(CAST(ROUND(fds_exposure_current, 2) AS STRING), '')
+		                || '\nNegative Balance: ' || COALESCE(nb_balance_current, 0)
+		                || '\n\n'
+		                || '\nCurrent D&B Score: ' || COALESCE(db_failure_score_current, null)
+		                || '\nPrevious D&B Score: ' || COALESCE(db_failure_score_last, null)
+		                || '\nScore Change: ' || COALESCE(db_failure_score_change, null)
+		                || '\n\n\nCreated by OtterNet'
+		                AS body,
+		                false AS public
+		            ) AS comment,
+		
+		            -- Subject
+		            'Credit Monitoring - D&B Score - ' || COALESCE(merchant_name, '') || ' - ' || COALESCE(creditor_id, '') AS subject
+		        ) AS ticket
+		    )
+) AS ActionField_ZendeskCreateTicket,
 
-            -- Subject
-            'Credit Monitoring - D&B Score - ' || COALESCE(merchant_name, '') || ' - ' || COALESCE(creditor_id, '') AS subject
-        ) AS ticket
-    )
-) AS ActionField_ZendeskCreateTicket
+,case when 'XXXXXXX' = 'YYYYYYYY' then true else false end as ActionField_FreezeAccount
+,case when 'XXXXXXX' = 'YYYYYYYY' then true else false end as ActionField_DisablePayouts
+
+,case when 'XXXXXXX' = 'YYYYYYYY' then 10 else null end as ActionField_ChangeHoldingPeriod
+,case when 'XXXXXXX' = 'YYYYYYYY' then 100000 else null end as ActionField_ApplyNegBalanceLimits
+
+	
+	
 
 
 
