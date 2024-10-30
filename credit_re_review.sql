@@ -120,7 +120,7 @@ select *
 
             -- Comment object
             STRUCT(
-								||'\n' || 'Creditor ID: [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
+								'Creditor ID: [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
 								||'\n' || 'Organisation ID: ' || organisation_id
 								||'\n' || 'Merchant name: ' || merchant_name
 								||'\n' || 'Geo: ' || geo
@@ -163,10 +163,3 @@ select *
 
 from payload
 limit 1
-
-
-
-
-
-
-
