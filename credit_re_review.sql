@@ -132,8 +132,8 @@ select *
 								||'\n' || 'Parent Name: ' || parent_account_name
 								||'\n' || 'Account Type: ' || account_type
 								
-								|| '\n' || 'Payments last 12m: £' || FORMAT('%.1f', round(merchant_payment_amt_gbp_last_365d,1))
-								|| '\n' || 'FDS Exposure: £' || FORMAT('%.1f', round(fds_exposure_current,1))
+   							|| '\n' || 'Payments last 12m: £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
+  						  || '\n' || 'FDS Exposure: £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
 								||'\n'
 								||'\n' || 'Original ticket created at: ' || date(ticket_created_at)
 								||'\n' || 'Ticket subject was: ' || subject
