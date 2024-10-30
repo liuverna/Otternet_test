@@ -34,14 +34,51 @@ select
 from `gc-prd-risk-prod-gdia.dbt_risk.d_fds_exposure`
 qualify row_number() over (partition by creditor_id order by calculated_at_date desc) =1)
 
-
-,creditor_payments as (
-select
+,creditor_payments_temp as (select
 	creditor_id
-    ,sum(case when is_paid          and date(charge_date)       between current_date()-365   and current_date()-1    then amount_gbp          else 0 end) as merchant_payment_amt_gbp_last_365d
-from dbt_core_model.x_payments
+    ,sum(case when is_paid and date(charge_date) between current_date()-90 and current_date()-1 then 1 else 0 end) as merchant_payment_vol_last_90d
+
+    ,sum(case when is_charged_back  and date(charged_back_date) between current_date()-90 and current_date()-1 then 1 else 0 end) as merchant_chargeback_vol_last_90d
+
+    ,sum(case when is_failed and date(failed_or_late_failure_date) between current_date()-90 and current_date()-1 then 1 else 0 end) as merchant_failure_vol_last_90d
+
+    ,sum(case when is_late_failure and date(failed_or_late_failure_date) between current_date()-90 and current_date()-1 then 1 else 0 end) as merchant_late_failure_vol_last_90d
+
+    ,sum(case when is_refunded  and date(refund_created_at) between current_date()-90 and current_date()-1 then 1  else 0 end) as merchant_refund_vol_last_90d
+
+    ,sum(case when is_paid and date(charge_date)  between current_date()-365   and current_date()-1    then amount_gbp  else 0 end) as merchant_payment_amt_gbp_last_365d
+
+from `gc-prd-bi-pdata-prod-94e7.dbt_core_model.x_payments` 
+where 
+date(charge_date) between current_date()-365 and current_date()-1
+or date(charged_back_date) between current_date()-90 and current_date()-1
+or date(failed_or_late_failure_date) between current_date()-90 and current_date()-1
+or date(refund_created_at) between current_date()-90 and current_date()-1
+
 group by 1)
 
+
+,creditor_payments as (
+		select *
+					,SAFE_DIVIDE(merchant_chargeback_vol_last_90d,merchant_payment_vol_last_90d) as cb_rate_90days
+					,SAFE_DIVIDE(merchant_failure_vol_last_90d,merchant_payment_vol_last_90d) as failure_rate_90days
+					,SAFE_DIVIDE(merchant_late_failure_vol_last_90d,merchant_payment_vol_last_90d) as late_failure_rate_90days
+					,SAFE_DIVIDE(merchant_refund_vol_last_90d,merchant_payment_vol_last_90d) as refund_rate_90days
+		from creditor_payments_temp
+		)
+
+
+,dnb_scores as (select 
+    creditor_id
+    ,dnb_assessment.failure_score.national_percentile as db_failure_score_current
+    ,date(retrieved_at) as db_failure_score_current_date
+    ,row_number() over (partition by creditor_id order by retrieved_at desc) as rowno
+
+from  `gc-prd-risk-prod-gdia.dun_bradstreet_reports.dun_bradstreet_report__4` 
+where dnb_assessment.failure_score.national_percentile is not null
+qualify rowno = 1
+
+)
 
 ,tickets as (SELECT
   ticket_id
@@ -79,18 +116,30 @@ select
   ,a.parent_account_name
 	,a.is_cs_managed
   ,a.csm_owner_name
-	,round(b.fds_exposure_current,1) as fds_exposure_current
-	,round(c.merchant_payment_amt_gbp_last_365d,1) as merchant_payment_amt_gbp_last_365d
 
-	,d.ticket_id
-	,d.created_at as ticket_created_at
-	,d.next_review_date
-	,d.subject
+
+	,round(b.fds_exposure_current,1) as fds_exposure_current
+	
+	,round(c.merchant_payment_amt_gbp_last_365d,1) as merchant_payment_amt_gbp_last_365d
+	,c.cb_rate_90days
+	,c.failure_rate_90days
+	,c.late_failure_rate_90days
+	,c.refund_rate_90days
+
+
+  ,d.db_failure_score_current
+  ,d.db_failure_score_current_date
+
+	,e.ticket_id
+	,e.created_at as ticket_created_at
+	,e.next_review_date
+	,e.subject
 
 from creditor_details  			as a 
 left join exposure   			as b on a.creditor_id=b.creditor_id
 left join creditor_payments     as c on a.creditor_id=c.creditor_id
-left join tickets as d on a.organisation_id=d.organisation_id
+left join dnb_scores as d on d.creditor_id = a.creditor_id
+left join tickets as e on a.organisation_id=e.organisation_id
 )
 
 ,payload as (
@@ -124,21 +173,37 @@ select *
 
             -- Comment object
 	 STRUCT(
-		    '**Creditor ID:** [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
+        '**Merchant Details:**'
+		    || '\n' || '**Creditor ID:** [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
 		    || '\n' || '**Organisation ID:** ' || organisation_id
 		    || '\n' || '**Merchant name:** ' || merchant_name
 		    || '\n' || '**Geo:** ' || geo
 		    || '\n' || '**MCC:** ' || merchant_category_code_description
 		    || '\n' || '**Payment provider:** ' || is_payment_provider
-		    || '\n' || '**Risk Label:** ' || merchant_risk_label_description
-		    || '\n' || '**Risk Label Date:** ' || most_recent_risk_label_created_at
-		    || '\n' || '**Parent ID:** ' || parent_account_id
-		    || '\n' || '**Parent Name:** ' || parent_account_name
-		    || '\n' || '**Account Type:** ' || account_type
+        || '\n' || '**Account Type:** ' || account_type
 				|| '\n' || '**CS Managed:** ' || is_cs_managed
 				|| '\n' || '**CS Manager Name:** ' || coalesce(csm_owner_name,'N/A')
+
+				|| '\n\n' || '**Parent Information:**'
+		    || '\n' || '**Parent ID:** ' || parent_account_id
+		    || '\n' || '**Parent Name:** ' || parent_account_name
+
+				|| '\n\n' || '**Risk Labels:**'
+		    || '\n' || '**Risk Label:** ' || merchant_risk_label_description
+		    || '\n' || '**Risk Label Date:** ' || most_recent_risk_label_created_at
+
+				|| '\n\n' || '**Failure Score:**'
+				|| '\n' || '**D&B Score:** ' || db_failure_score_current
+				|| '\n' || '**Score Date:** ' || db_failure_score_current_date
+
+				|| '\n\n' || '**Payment Information:**'
+				|| '\n' || '**FDS Exposure:** £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
 		    || '\n' || '**Payments last 12m:** £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
-		    || '\n' || '**FDS Exposure:** £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
+				|| '\n' || '**Chargeback rate (90days):** ' || CAST(cb_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
+				|| '\n' || '**Failure rate (90days):** ' || CAST(failure_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
+				|| '\n' || '**Late Failure rate (90days):** ' || CAST(late_failure_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
+				|| '\n' || '**Refund rate (90days):** ' || CAST(refund_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
+
 		    || '\n'
 		    || '\n' || '**Original ticket created at:** ' || date(ticket_created_at)
 		    || '\n' || '**Ticket subject was:** ' || subject
