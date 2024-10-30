@@ -120,7 +120,7 @@ select *
 
             -- Comment object
             STRUCT(
-                'Creditor ID: ' || creditor_id 
+								||'\n' || 'Creditor ID: [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
 								||'\n' || 'Organisation ID: ' || organisation_id
 								||'\n' || 'Merchant name: ' || merchant_name
 								||'\n' || 'Geo: ' || geo
@@ -135,11 +135,13 @@ select *
 								||'\n' || 'Payments last 12m: ' || round(merchant_payment_amt_gbp_last_365d,2)
 								||'\n' || 'FDS Exposure: ' || round(fds_exposure_current,2)
 								||'\n'
-
-								|| '\n' || '\n' || 'Previous ticket link here: [View Ticket](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
-							 	|| '\n' || 'Link to underwriter’s dashboard: [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
 								||'\n' || 'Original ticket created at: ' || date(ticket_created_at)
 								||'\n' || 'Ticket subject was: ' || subject
+								|| '\n' || '\n' || 'Previous ticket link here: [' || ticket_id  || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
+							 	|| '\n' || 'Link to underwriter’s dashboard: [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
+								
+
+
 								-- ||'\n' || ': ' || xxxx
 								-- ||'\n' || ': ' || xxxx
 								-- ||'\n' || ': ' || xxxx
