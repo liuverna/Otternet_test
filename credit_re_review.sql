@@ -18,6 +18,8 @@ select
   ,b.current_state
   ,b.parent_account_id
   ,b.parent_account_name
+	,b.is_cs_managed
+  ,b.csm_owner_name
 	,1 as var1
 from `gc-prd-bi-pdata-prod-94e7.dbt_core_model.d_creditor`  as a
 left join dbt_core_model.d_organisation as b
@@ -75,6 +77,8 @@ select
 	,a.insolvency_flag
 	,a.parent_account_id
   ,a.parent_account_name
+	,a.is_cs_managed
+  ,a.csm_owner_name
 	,round(b.fds_exposure_current,1) as fds_exposure_current
 	,round(c.merchant_payment_amt_gbp_last_365d,1) as merchant_payment_amt_gbp_last_365d
 
@@ -131,6 +135,8 @@ select *
 		    || '\n' || '**Parent ID:** ' || parent_account_id
 		    || '\n' || '**Parent Name:** ' || parent_account_name
 		    || '\n' || '**Account Type:** ' || account_type
+				|| '\n' || '**CS Managed:** ' || is_cs_managed
+				|| '\n' || '**CS Manager Name:** ' || csm_owner_name
 		    || '\n' || '**Payments last 12m:** £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
 		    || '\n' || '**FDS Exposure:** £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
 		    || '\n'
