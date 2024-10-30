@@ -119,35 +119,28 @@ select *
             ] AS custom_fields,
 
             -- Comment object
-            STRUCT(
-								'Creditor ID: [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
-								||'\n' || 'Organisation ID: ' || organisation_id
-								||'\n' || 'Merchant name: ' || merchant_name
-								||'\n' || 'Geo: ' || geo
-								||'\n' || 'MCC: ' || merchant_category_code_description
-								||'\n' || 'Payment provider: ' || is_payment_provider
-								||'\n' || 'Insolvency flag: ' || merchant_risk_label_description
-								||'\n' || 'Risk Label Date: ' || most_recent_risk_label_created_at
-								||'\n' || 'Parent ID: ' || parent_account_id
-								||'\n' || 'Parent Name: ' || parent_account_name
-								||'\n' || 'Account Type: ' || account_type
-								
-   							|| '\n' || 'Payments last 12m: £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
-  						  || '\n' || 'FDS Exposure: £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
-								||'\n'
-								||'\n' || 'Original ticket created at: ' || date(ticket_created_at)
-								||'\n' || 'Ticket subject was: ' || subject
-								|| '\n' || '\n' || 'Previous ticket link here: [' || ticket_id  || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
-							 	|| '\n' || 'Link to underwriter’s dashboard: [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
-								
+	 STRUCT(
+		    '**Creditor ID:** [' || creditor_id || '](https://manage.gocardless.com/admin/creditors/' || creditor_id || ')'
+		    || '\n' || '**Organisation ID:** ' || organisation_id
+		    || '\n' || '**Merchant name:** ' || merchant_name
+		    || '\n' || '**Geo:** ' || geo
+		    || '\n' || '**MCC:** ' || merchant_category_code_description
+		    || '\n' || '**Payment provider:** ' || is_payment_provider
+		    || '\n' || '**Insolvency flag:** ' || merchant_risk_label_description
+		    || '\n' || '**Risk Label Date:** ' || most_recent_risk_label_created_at
+		    || '\n' || '**Parent ID:** ' || parent_account_id
+		    || '\n' || '**Parent Name:** ' || parent_account_name
+		    || '\n' || '**Account Type:** ' || account_type
+		    || '\n' || '**Payments last 12m:** £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
+		    || '\n' || '**FDS Exposure:** £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
+		    || '\n'
+		    || '\n' || '**Original ticket created at:** ' || date(ticket_created_at)
+		    || '\n' || '**Ticket subject was:** ' || subject
+		    || '\n' || '\n' || '**Previous ticket link here:** [' || ticket_id  || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
+		    || '\n' || '**Link to underwriter’s dashboard:** [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
+		    || '\n' || '\n' || '\n' || 'Created by OtterNet'
+		AS body,
 
-
-								-- ||'\n' || ': ' || xxxx
-								-- ||'\n' || ': ' || xxxx
-								-- ||'\n' || ': ' || xxxx
-								-- ||'\n' || ': ' || xxxx
-								||'\n' || '\n' || '\n' || 'Created by OtterNet'
-								 AS body,
 
 
                 false AS public
