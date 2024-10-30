@@ -130,7 +130,7 @@ select *
 		    || '\n' || '**Geo:** ' || geo
 		    || '\n' || '**MCC:** ' || merchant_category_code_description
 		    || '\n' || '**Payment provider:** ' || is_payment_provider
-		    || '\n' || '**Insolvency flag:** ' || merchant_risk_label_description
+		    || '\n' || '**Risk Label:** ' || merchant_risk_label_description
 		    || '\n' || '**Risk Label Date:** ' || most_recent_risk_label_created_at
 		    || '\n' || '**Parent ID:** ' || parent_account_id
 		    || '\n' || '**Parent Name:** ' || parent_account_name
