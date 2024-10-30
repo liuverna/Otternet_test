@@ -136,8 +136,8 @@ select *
 								||'\n' || 'FDS Exposure: ' || round(fds_exposure_current,2)
 								||'\n'
 
-								||'\n' || 'Previous ticket link here: <a href="https://gocardless.zendesk.com/agent/tickets/' || ticket_id || '">View Ticket</a>'
-								|| '\n' || 'Link to underwriter’s dashboard: <a href="https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=">Underwriter Dashboard</a>'
+								|| '\n' || '\n' || 'Previous ticket link here: [View Ticket](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
+							 	|| '\n' || 'Link to underwriter’s dashboard: [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
 								||'\n' || 'Original ticket created at: ' || date(ticket_created_at)
 								||'\n' || 'Ticket subject was: ' || subject
 								-- ||'\n' || ': ' || xxxx
