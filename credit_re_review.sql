@@ -154,7 +154,7 @@ select *
             ) AS comment,
 
             -- Subject
-            'Credit Monitoring - Re-Review - ' || merchant_name || ' - ' || creditor_id AS subject
+            'Credit Monitoring - Re-Review - ' || /*merchant_name */ 'TEST NAME' || ' - ' || /*creditor_id*/ 'CR12345TEST' AS subject
 
 
         ) AS ticket
