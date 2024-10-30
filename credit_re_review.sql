@@ -14,7 +14,7 @@ select
 	,a.is_account_closed
 	,a.is_payment_provider
   ,a.organisation_with_multiple_creditors
-	,b.current_revenue_account_type as account_type 
+	,b.current_revenue_account_type as account_type
   ,b.current_state
   ,b.parent_account_id
   ,b.parent_account_name
@@ -136,7 +136,7 @@ select *
 		    || '\n' || '**Parent Name:** ' || parent_account_name
 		    || '\n' || '**Account Type:** ' || account_type
 				|| '\n' || '**CS Managed:** ' || is_cs_managed
-				|| '\n' || '**CS Manager Name:** ' || csm_owner_name
+				|| '\n' || '**CS Manager Name:** ' || coalesce(csm_owner_name,'N/A')
 		    || '\n' || '**Payments last 12m:** £' || CAST(merchant_payment_amt_gbp_last_365d AS STRING FORMAT '999,999,999.0')
 		    || '\n' || '**FDS Exposure:** £' || CAST(fds_exposure_current AS STRING FORMAT '999,999,999.0')
 		    || '\n'
