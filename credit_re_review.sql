@@ -14,7 +14,7 @@ select
 	,a.is_account_closed
 	,a.is_payment_provider
   ,a.organisation_with_multiple_creditors
-	,b.current_revenue_account_type as account_type
+	,b.current_revenue_account_type as account_type 
   ,b.current_state
   ,b.parent_account_id
   ,b.parent_account_name
