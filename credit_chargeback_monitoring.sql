@@ -349,7 +349,4 @@ SELECT *
 	)) AS ActionField_ZendeskCreateTicket
 FROM payload
 WHERE merchant_monitoring_qualifyer = 1 
--- AND chargeback_monitoring_alert IN ("New Alert","Chargeback Rate Increase >10% since last trigger","Chargeback Rate Re-Trigger after 90 days")
-AND creditor_id = 'CR00007K5VATJE'
-limit 1
-
+AND chargeback_monitoring_alert IN ("New Alert","Chargeback Rate Increase >10% since last trigger","Chargeback Rate Re-Trigger after 90 days")
