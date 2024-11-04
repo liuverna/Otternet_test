@@ -169,11 +169,12 @@ select
 																				,date(runtime) AS chargeback_monitoring_date_last
 																				,date_diff(current_date(),date(runtime),day) AS chargeback_monitoring_days_since
 																				,true AS chargeback_monitoring_trigger_last
+																				,row_number() over (partition by JSON_VALUE(values, "$.creditor_id"),process_name order by runtime desc) as rowno
 
 																		from `gc-prd-credit-risk-dev-81b5.otternet_dev.otternet_devlog` 
 																		where logtype = "result"
 																		and process_name = "credit_chargeback_monitoring"
-																		qualify row_number() over (partition by creditor_id,process_name order by date(runtime) desc)=1 
+																		qualify rowno = 1
 )
 
 
