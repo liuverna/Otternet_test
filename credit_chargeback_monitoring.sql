@@ -326,9 +326,9 @@ SELECT *
 
 				|| CASE WHEN chargeback_monitoring_trigger_last THEN
 				'\n' || '**Previous ticket link here:** [' || ticket_id || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
-				|| '\n' || '**CB Rate Previously:** ' || COALESCE(CAST(chargeback_monitoring_rate_last AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'
-				|| '\n' || '**CB Rate Now:** ' || COALESCE(CAST(cb_rate_30days AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'
-				|| '\n' || '**Reference CB Rate:** ' || COALESCE(CAST(reference_cb_rate AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'				
+				|| '\n' || '**CB Rate Previously:** ' || COALESCE(CAST(chargeback_monitoring_rate_last * 100 AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'
+				|| '\n' || '**CB Rate Now:** ' || COALESCE(CAST(cb_rate_30days  * 100 AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'
+				|| '\n' || '**Reference CB Rate:** ' || COALESCE(CAST(reference_cb_rate  * 100 AS STRING FORMAT '999,999,999.00'), 'N/A') || '%'				
 				|| '\n' || '**Date Last Trigger:** ' || COALESCE(cast(date(chargeback_monitoring_date_last) as string), 'N/A') 
 				|| '\n' || '**Days Since Last Trigger:** ' || COALESCE(cast(chargeback_monitoring_days_since as string), 'N/A') 				
 				ELSE 
