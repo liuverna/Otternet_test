@@ -24,8 +24,7 @@ select
 from `gc-prd-bi-pdata-prod-94e7.dbt_core_model.d_creditor`  as a
 left join dbt_core_model.d_organisation as b
 on a.organisation_id = b.organisation_id
-where b.current_state != "preactive"  and date(most_recent_risk_label_created_at) >= date("2024-09-04")
-and not a.is_payment_provider)
+where not a.is_payment_provider)
 
 ,exposure as (
 select 
@@ -85,6 +84,7 @@ qualify rowno = 1
   ,date(tickets.created_at) as created_at
   ,tickets.subject
   ,max(case when ticket_field_title = "Next Review Date" then SAFE_CAST(ticket_field_value AS DATE) else null end) AS next_review_date
+  ,max(case when ticket_field_title = "Reason for next review" then ticket_field_value else null end) AS reason_for_next_review
   ,max(org_ids.gc_organization_id) as organisation_id
   
 
@@ -92,7 +92,8 @@ qualify rowno = 1
 FROM `gc-prd-bi-pdata-prod-94e7.dbt_zendesk.zendesk_tickets` as tickets
   left join `gc-prd-bi-pdata-prod-94e7.dbt_zendesk.zendesk_ticket_fields`  as fields on tickets.id = fields.ticket_id
   left join `gc-prd-bi-pdata-prod-94e7.dbt_zendesk.zendesk_organizations` as org_ids on org_ids.id = tickets.organization_id
-  group by 1,2,3)
+  group by 1,2,3
+  having next_review_date is not null)
 
 ----------------------------------------------------------------------------
 --Data Merge
@@ -133,7 +134,8 @@ select
 	,e.ticket_id
 	,e.created_at as ticket_created_at
 	,e.next_review_date
-	,e.subject
+  ,e.reason_for_next_review
+
 
 from creditor_details  			as a 
 left join exposure   			as b on a.creditor_id=b.creditor_id
@@ -144,7 +146,7 @@ left join tickets as e on a.organisation_id=e.organisation_id
 
 ,payload as (
 select * from data_merge
-where next_review_date >= current_date()
+where date(next_review_date) = current_date()
 )
 
 select * 
@@ -204,21 +206,19 @@ select *
 				|| '\n' || '**Late Failure rate (90days):** ' || CAST(late_failure_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
 				|| '\n' || '**Refund rate (90days):** ' || CAST(refund_rate_90days * 100 AS STRING FORMAT '999,999,999.00') || '%'
 
-		    || '\n'
-		    || '\n' || '**Original ticket created at:** ' || date(ticket_created_at)
-		    || '\n' || '**Ticket subject was:** ' || subject
-		    || '\n' || '\n' || '**Previous ticket link here:** [' || ticket_id  || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
-		    || '\n' || '**Link to underwriter’s dashboard:** [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
-		    || '\n' || '\n' || '\n' || 'Created by OtterNet'
+
+		    || '\n\n' || '**Original ticket created at:** ' || date(ticket_created_at)
+		    || '\n' || '**Previous ticket link here:** [' || ticket_id  || '](https://gocardless.zendesk.com/agent/tickets/' || ticket_id || ')'
+        || '\n' || '**Stated review reason:** ' || reason_for_next_review
+
+		    || '\n\n' || '**Link to underwriter’s dashboard:** [Underwriter Dashboard](https://looker.gocardless.io/dashboards/3505?Organisation+ID=' || organisation_id || '&Creditor+ID=&Company+Number=)'
+		    || '\n\n\n' || 'Created by OtterNet'
 		AS body,
-
-
-
-                false AS public
+              false AS public
             ) AS comment,
 
             -- Subject
-            'Credit Monitoring - Re-Review - ' || /*merchant_name */ 'TEST NAME' || ' - ' || /*creditor_id*/ 'CR12345TEST' AS subject
+            'Credit Monitoring - Re-Review - ' || merchant_name || ' - ' || creditor_id AS subject
 
 
         ) AS ticket
@@ -226,4 +226,3 @@ select *
 
 
 from payload
-limit 1
