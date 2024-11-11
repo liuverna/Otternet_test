@@ -148,7 +148,7 @@ select
 
 																		from `gc-prd-credit-risk-dev-81b5.otternet_dev.otternet_devlog` 
 																		where logtype = "result"
-																		and process_name = "credit_chargeback_monitoring"
+																		and process_name = "credit_negative_balance"
 																		qualify rowno = 1
 )
 
@@ -220,9 +220,9 @@ select *
         ,SAFE_SUBTRACT(-nb_balance_current,-nb_balance_prev) as NB_Increase
 
 from data_merge
-where nb_balance_current <= -20000
-      and 
-      insolvency_flag = false
+-- where nb_balance_current <= -20000
+--       and 
+--       insolvency_flag = false
       -- and
       -- last_payment_days_ago <= 40
 )
@@ -249,7 +249,7 @@ select *
                 value STRING
             >>[
                 -- Custom field entries
-                STRUCT(28480929, 'credit__monitoring_rr')  -- Category
+                STRUCT(28480929, 'credit__monitoring_nb')  -- Category
                 -- STRUCT(15542500163356, '12345')  -- Exposure
                 -- STRUCT(15545615128732, '123')  -- Fraud score (uncomment if needed)
 
@@ -317,5 +317,7 @@ select *
 
 
 from payload
-where nb_alert_type != 'No Alert'
-limit 1
+-- where nb_alert_type != 'No Alert'
+-- and 
+where
+creditor_id = 'CR0000652BJ62R'
