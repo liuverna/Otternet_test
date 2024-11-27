@@ -461,4 +461,4 @@ select *
 				)) AS ActionField_ZendeskCreateTicket
 
 
-from payload limit 1
+from payload where creditor_id is not null limit 1
