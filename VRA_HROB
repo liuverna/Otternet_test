@@ -1,0 +1,28 @@
+SELECT
+    merchants.creditor_id  AS creditor_id,
+    merchants.name AS merchant_name,
+    merchants.geo AS merchant_geo,
+    salesforce.opportunity_id as salesforce_opportunity_id,
+    CASE WHEN merchants.merchant_category_code IS NOT NULL THEN SAFE_CAST(merchants.merchant_category_code AS INT64) END AS merchant_category_code,
+        (DATE(merchants.created_at )) AS created_date,
+        --f_creditor.company_number,
+    SUM(f_organisation.total_payment_gbp_amount_in_all_time ) AS payment_gbp_amount_in_all_time
+
+
+FROM `gc-prd-bi-pdata-prod-94e7.dbt_core_model.d_organisation`  AS merchants
+LEFT JOIN `gc-prd-bi-pdata-prod-94e7.dbt_core_model.f_organisation`  AS f_organisation 
+ON merchants.organisation_id = f_organisation.organisation_id
+LEFT JOIN `gc-prd-bi-pdata-prod-94e7.dbt_core_model.d_creditor`  AS f_creditor 
+ON merchants.organisation_id = f_creditor.organisation_id
+LEFT JOIN (select account_id,opportunity_id,opportunity_created_date 
+          from `gc-prd-sales-prod-ae5e.dbt_sales_data_products.report_salesforce_opportunities_v1`
+          QUALIFY row_number() over (partition by account_id order by opportunity_created_date desc) = 1) as salesforce
+on merchants.account_id = salesforce.account_id
+where DATE(merchants.created_at ) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY) and merchants.merchant_category_code is not null
+GROUP BY
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
