@@ -1,4 +1,4 @@
-SELECT
+WITH data_aggregation as (SELECT
     merchants.creditor_id  AS creditor_id,
     merchants.name AS merchant_name,
     merchants.geo AS merchant_geo,
@@ -25,4 +25,25 @@ GROUP BY
     3,
     4,
     5,
-    6
+    6)
+
+,payload as (SELECT 
+*
+, case when merchant_category_code in (4511,4722,4829,5094,5122,5169,5172,5271,5301,5310,5311,5051,5551,5561,5571,5592,5598,5715,5912,5913,5921,5933,5944,5962,5966,5993,5813,7549,6051,6532,7297,6534,6538,7011,7012,7273,7277,7322,7995,7996) then true else false end as restricted_industry
+,case when merchant_category_code in (8249,8211,8241,8244,8299,8220,6529,6533,1711,7629,7699,6300,6211,6531,6536,7407,7408,7261,7801,7995,5816,7800) then true else false end as compliance_hrob
+--Restricted Industries and Compliance High Risk Industries
+,case
+  when merchant_category_code in (4511,4722,4829,5094,5122,5169,5172,5271,5301,5310,5311,5051,5551,5561,5571,5592,5598,5715,5912,5913,5921,5933,5944,5962,5966,5993,5813,7549,6051,6532,7297,6534,6538,7011,7012,7273,7277,7322,7995,7996) 
+    then true
+  when merchant_category_code in (8249,8211,8241,8244,8299,8220,6529,6533,1711,7629,7699,6300,6211,6531,6536,7407,7408,7261,7801,7995,5816,7800) 
+    and salesforce_opportunity_id is null 
+    and (payment_gbp_amount_in_all_time is null or payment_gbp_amount_in_all_time = 0) 
+    then true
+  else false 
+end as freeze_account_action
+--Compliance High Risk Industries
+,case when merchant_category_code in (8249,8211,8241,8244,8299,8220,6529,6533,1711,7629,7699,6300,6211,6531,6536,7407,7408,7261,7801,7995,5816,7800) then true else false end as create_zendesk_ticket
+
+from data_aggregation)
+
+select * from payload 
